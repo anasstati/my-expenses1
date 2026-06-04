@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="مصاريفي" />
+  <title>مصاريفي</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ============================================== -->
+  <!-- HOME VIEW - Months Grid                          -->
+  <!-- ============================================== -->
+  <div class="view view-home active" id="viewHome">
+    <header class="home-header">
+      <div class="home-top">
+        <div class="brand">
+          <span class="brand-icon">💎</span>
+          <div>
+            <h1>مصاريفي</h1>
+            <p>إدارة مالية شخصية</p>
+          </div>
+        </div>
+        <div class="home-actions">
+          <button class="icon-btn-ghost" id="settingsBtn" title="إعدادات">⚙️</button>
+          <button class="icon-btn-ghost" id="installBtn" title="تثبيت" style="display:none">📲</button>
+        </div>
+      </div>
+
+      <!-- Total summary across all months -->
+      <div class="total-card">
+        <div class="total-row">
+          <div>
+            <span class="total-label">إجمالي الرصيد (كل الأشهر)</span>
+            <div class="total-value" id="allBalance">0.00 <span class="cur" id="allCur">د.أ</span></div>
+          </div>
+          <div class="total-mini">
+            <div>
+              <span class="mini-label">دخول</span>
+              <span class="mini-value income" id="allIncome">0</span>
+            </div>
+            <div>
+              <span class="mini-label">صرف</span>
+              <span class="mini-value expense" id="allExpense">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="home-body">
+      <div class="section-header">
+        <h2>📅 الأشهر</h2>
+        <span class="month-count" id="monthCount">0 شهر</span>
+      </div>
+      <div class="months-grid" id="monthsGrid"></div>
+      <p class="empty-state" id="emptyMonths" hidden>
+        <span class="empty-icon">📭</span>
+        لا توجد أشهر محفوظة بعد
+        <small>اضغط + لإنشاء أول شهر</small>
+      </p>
+    </div>
+
+    <button class="fab-modern" id="fabAddMonth" title="إضافة شهر جديد">＋</button>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MONTH DETAIL VIEW                                -->
+  <!-- ============================================== -->
+  <div class="view view-month" id="viewMonth">
+    <header class="month-header">
+      <button class="back-btn" id="backBtn" title="رجوع">
+        <span>›</span>
+      </button>
+      <div class="month-header-info">
+        <h1 id="mTitle">—</h1>
+        <p id="mSub">—</p>
+      </div>
+      <button class="icon-btn-solid" id="mMenu" title="المزيد">⋯</button>
+    </header>
+
+    <!-- Summary -->
+    <div class="summary-modern">
+      <div class="sum-card income">
+        <div class="sum-icon">💵</div>
+        <div>
+          <span class="sum-label">المدخولات</span>
+          <div class="sum-value"><span id="mIncome">0</span> <span class="cur" id="mCur1">د.أ</span></div>
+        </div>
+      </div>
+      <div class="sum-card expense">
+        <div class="sum-icon">💸</div>
+        <div>
+          <span class="sum-label">المصاريف</span>
+          <div class="sum-value"><span id="mExpense">0</span> <span class="cur" id="mCur2">د.أ</span></div>
+        </div>
+      </div>
+      <div class="sum-card balance" id="mBalanceCard">
+        <div class="sum-icon">💎</div>
+        <div>
+          <span class="sum-label">المتبقي</span>
+          <div class="sum-value"><span id="mBalance">0</span> <span class="cur" id="mCur3">د.أ</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick add pill -->
+    <div class="quick-add-pill" id="quickAddPill">
+      <span>＋</span> إضافة سريعة
+    </div>
+
+    <!-- Tabs -->
+    <nav class="modern-tabs">
+      <button class="m-tab active" data-mtab="expenses">
+        <span>المصاريف</span>
+        <span class="m-tab-badge" id="mExpBadge">0</span>
+      </button>
+      <button class="m-tab" data-mtab="income">
+        <span>المدخولات</span>
+        <span class="m-tab-badge" id="mIncBadge">0</span>
+      </button>
+      <button class="m-tab" data-mtab="analysis">
+        <span>الدراسات</span>
+      </button>
+    </nav>
+
+    <!-- Expenses panel -->
+    <section class="m-panel active" id="mPanel-expenses">
+      <div class="list-tools-modern">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="search" id="mSearch" placeholder="ابحث..." />
+        </div>
+        <select id="mFilterCat" class="mini-select"><option value="all">كل الفئات</option></select>
+      </div>
+      <div class="modern-list" id="mExpList"></div>
+      <p class="empty-state" id="mExpEmpty">لا توجد مصاريف ✨</p>
+    </section>
+
+    <!-- Income panel -->
+    <section class="m-panel" id="mPanel-income">
+      <div class="modern-list" id="mIncList"></div>
+      <p class="empty-state" id="mIncEmpty">لا توجد مدخولات ✨</p>
+    </section>
+
+    <!-- Analysis panel -->
+    <section class="m-panel" id="mPanel-analysis">
+      <div class="range-pills-modern" id="rangePills">
+        <button class="rpill" data-range="3">3</button>
+        <button class="rpill active" data-range="6">6</button>
+        <button class="rpill" data-range="12">12</button>
+        <button class="rpill" data-range="all">الكل</button>
+      </div>
+      <div class="stats-modern" id="mStats"></div>
+      <div class="chart-card">
+        <h4>المدخولات vs المصاريف</h4>
+        <canvas id="chIncomeExpense"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>توزيع المصاريف</h4>
+        <canvas id="chCategory"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>اتجاه الرصيد</h4>
+        <canvas id="chBalance"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>نسبة الصرف %</h4>
+        <canvas id="chRatio"></canvas>
+      </div>
+    </section>
+
+    <div class="bottom-spacer"></div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- QUICK ADD MODAL                                  -->
+  <!-- ============================================== -->
+  <div class="modal" id="quickAddModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <h3 id="qaTitle">➕ إضافة سريعة</h3>
+      <div class="qa-toggle">
+        <button class="qa-tg active" data-qa="expense">💸 مصروف</button>
+        <button class="qa-tg" data-qa="income">💵 مدخول</button>
+      </div>
+      <form id="qaForm" class="form-modern">
+        <div class="amount-input-big">
+          <input type="number" id="qaAmount" step="0.01" min="0" inputmode="decimal" placeholder="0" required />
+          <span class="cur" id="qaCur">د.أ</span>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>التاريخ</label>
+            <input type="date" id="qaDate" required />
+          </div>
+          <div class="field">
+            <label>ملاحظة</label>
+            <input type="text" id="qaNote" placeholder="اختياري" />
+          </div>
+        </div>
+        <div class="field">
+          <label id="qaCatLabel">الفئة</label>
+          <div class="chip-group" id="qaChips"></div>
+        </div>
+        <input type="hidden" id="qaType" value="expense" />
+        <input type="hidden" id="qaCatVal" />
+        <input type="hidden" id="qaEditId" />
+        <div class="actions" style="flex-direction:row">
+          <button type="button" class="btn btn-ghost btn-block" data-close>إلغاء</button>
+          <button type="submit" class="btn btn-primary btn-block">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MONTH MENU MODAL                                 -->
+  <!-- ============================================== -->
+  <div class="modal" id="monthMenuModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <h3 id="mMenuTitle">—</h3>
+      <div class="export-options">
+        <button class="export-opt" data-action="excel-current">
+          <span class="ex-icon">📊</span><div><strong>Excel - هذا الشهر</strong><small>ملف .xls جاهز</small></div>
+        </button>
+        <button class="export-opt" data-action="csv-current">
+          <span class="ex-icon">📄</span><div><strong>CSV - هذا الشهر</strong><small>Excel و Google Sheets</small></div>
+        </button>
+        <button class="export-opt" data-action="wa-share">
+          <span class="ex-icon">💬</span><div><strong>مشاركة واتساب</strong><small>إرسال التقرير لشخص</small></div>
+        </button>
+        <button class="export-opt" data-action="rename">
+          <span class="ex-icon">✏️</span><div><strong>إعادة تسمية</strong><small>تغيير اسم الشهر</small></div>
+        </button>
+        <button class="export-opt danger" data-action="delete-month">
+          <span class="ex-icon">🗑️</span><div><strong>حذف هذا الشهر</strong><small>كل البيانات ستُحذف</small></div>
+        </button>
+      </div>
+      <button class="btn btn-ghost btn-block" data-close>إغلاق</button>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- WHATSAPP MODAL                                   -->
+  <!-- ============================================== -->
+  <div class="modal" id="whatsappModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <h3>💬 إرسال عبر واتساب</h3>
+      <div class="wa-style-toggle">
+        <button class="wa-style-btn active" data-style="simple">🧾 بسيطة</button>
+        <button class="wa-style-btn" data-style="detailed">📊 منسّقة</button>
+        <button class="wa-style-btn" data-style="minimal">⚡ مختصرة</button>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label>رقم الجوال (اختياري)</label>
+        <input type="tel" id="waPhone" placeholder="مثال: 962788225366" inputmode="tel" />
+        <small style="color:#718096;font-size:0.75rem;margin-top:4px">اتركه فارغ للإرسال لنفسك</small>
+      </div>
+      <div class="wa-preview" id="waPreview">—</div>
+      <div class="actions" style="flex-direction:row;margin-top:12px">
+        <button class="btn btn-secondary btn-block" id="waCopyBtn">📋 نسخ</button>
+        <button class="btn btn-primary btn-block" id="waSendBtn">💬 فتح واتساب</button>
+      </div>
+      <button class="btn btn-ghost btn-block" data-close style="margin-top:8px">إغلاق</button>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- SETTINGS MODAL                                   -->
+  <!-- ============================================== -->
+  <div class="modal" id="settingsModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <h3>⚙️ الإعدادات</h3>
+      <div class="settings-row">
+        <label>العملة</label>
+        <select id="currencySelect">
+          <option value="د.أ">دينار أردني (د.أ)</option>
+          <option value="ر.س">ريال سعودي (ر.س)</option>
+          <option value="د.إ">درهم إماراتي (د.إ)</option>
+          <option value="د.ك">دينار كويتي (د.ك)</option>
+          <option value="$">دولار ($)</option>
+          <option value="€">يورو (€)</option>
+          <option value="£">جنيه (£)</option>
+          <option value="ج.م">جنيه مصري (ج.م)</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <label>النسخ الاحتياطي</label>
+        <div class="row-buttons">
+          <button class="btn btn-secondary" id="exportJsonBtn">📤 تصدير JSON</button>
+          <button class="btn btn-secondary" id="importBtn">📥 استيراد</button>
+          <input type="file" id="importFile" accept=".json" hidden />
+        </div>
+      </div>
+      <div class="settings-row">
+        <label>رفع Google Drive</label>
+        <button class="btn btn-secondary btn-block" id="driveBtn">☁️ رفع على Google Drive</button>
+      </div>
+      <div class="settings-row danger-zone">
+        <label>منطقة الخطر</label>
+        <button class="btn btn-danger btn-block" id="clearAllBtn">🗑️ مسح كل البيانات</button>
+      </div>
+      <button class="btn btn-ghost btn-block" data-close>إغلاق</button>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- ADD MONTH MODAL                                  -->
+  <!-- ============================================== -->
+  <div class="modal" id="addMonthModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <h3>📅 إضافة شهر جديد</h3>
+      <p class="hint">اختر الشهر والسنة. العدد مفتوح — ضيف كم شهر تبي</p>
+      <form id="addMonthForm" class="form-modern">
+        <div class="grid-2">
+          <div class="field">
+            <label>السنة</label>
+            <input type="number" id="newYear" min="2020" max="2099" required />
+          </div>
+          <div class="field">
+            <label>الشهر</label>
+            <select id="newMonth" required>
+              <option value="01">يناير</option><option value="02">فبراير</option>
+              <option value="03">مارس</option><option value="04">أبريل</option>
+              <option value="05">مايو</option><option value="06">يونيو</option>
+              <option value="07">يوليو</option><option value="08">أغسطس</option>
+              <option value="09">سبتمبر</option><option value="10">أكتوبر</option>
+              <option value="11">نوفمبر</option><option value="12">ديسمبر</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions" style="flex-direction:row">
+          <button type="button" class="btn btn-ghost btn-block" data-close>إلغاء</button>
+          <button type="submit" class="btn btn-primary btn-block">إنشاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- TOAST                                            -->
+  <!-- ============================================== -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
